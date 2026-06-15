@@ -1,0 +1,86 @@
+# SmartAIChatbot (SKASC Smart Assistant) Project Documentation
+
+## 1. Project Overview
+The SmartAIChatbot is a specialized AI assistant designed for Sri Krishna Arts and Science College (SKASC). It utilizes a hybrid NLP approach, combining local FAQ matching (using TF-IDF) with the power of Google's Gemini Flash model for general queries. It features a modern, branded UI and remembers context for a seamless user experience.
+
+## 2. System Architecture
+The system follows a Model-View-Template (MVT) architecture based on the Django framework.
+- **Frontend**: HTML5, CSS3 (SKASC Branded Theme), JavaScript (AJAX for real-time chat).
+- **Backend**: Python 3.x, Django 6.0.
+- **AI/NLP Engine**: Scikit-learn (TF-IDF Vectorization) for local matching and Google Generative AI (Gemini Flash) for LLM capabilities.
+- **Database**: MySQL (storing Categories, FAQs, and Chat Logs).
+- **Environment**: Environment variables (.env) for sensitive API keys and DB credentials.
+
+## 3. Entity-Relationship (ER) Diagram Description
+The database consists of three primary entities:
+- **Category**:
+    - ID (PK)
+    - Name (String, Unique)
+- **FAQ**:
+    - ID (PK)
+    - Category_ID (FK to Category)
+    - Question (Text)
+    - Answer (Text)
+- **ChatLog**:
+    - ID (PK)
+    - User_Query (Text)
+    - Bot_Response (Text)
+    - Timestamp (DateTime)
+
+Relationships:
+- A **Category** has a One-to-Many relationship with **FAQ** (One category can have multiple FAQs).
+- **ChatLog** is a standalone entity used for auditing and training purposes.
+
+## 4. Data Flow Diagram (DFD)
+- **Level 0 (Context Diagram)**:
+    - User -> [User Query] -> SmartAIChatbot System
+    - SmartAIChatbot System -> [Bot Response] -> User
+- **Level 1 (Process Overview)**:
+    1. **User Input**: User sends a query through the Chat Interface.
+    2. **Local Matcher**: The system checks the MySQL FAQ table using TF-IDF similarity.
+    3. **Decision Point**: 
+        - If Similarity > 0.3: Retrieve local Answer.
+        - If Similarity <= 0.3: Send query (with history) to Gemini API.
+    4. **Response Generation**: The final response is formatted.
+    5. **Logging**: The interaction is saved to the ChatLog table.
+    6. **Output**: Response is sent back to the User via AJAX.
+
+## 5. System Flow Diagram
+1. **Start**
+2. **User enters message** in the web UI.
+3. **AJAX POST Request** sends message to the `get_response` view.
+4. **Session Retrieval**: Retrieve previous chat context (last 3 exchanges).
+5. **NLP Check**:
+    - Run TF-IDF Vectorizer on local FAQ dataset.
+    - Calculate Cosine Similarity.
+    - Match found?
+        - **YES**: Select the answer from the database.
+        - **NO**: 
+            - Prepare history-aware prompt.
+            - Call Gemini-Flash-Latest API.
+            - Receive AI response.
+6. **Update Session**: Append current exchange to session history.
+7. **Database Log**: Save query and response to `ChatLog` table.
+8. **JSON Response**: Send response text to UI.
+9. **UI Display**: Append bot message bubble to the chat screen.
+10. **End**
+
+## 6. Module Description
+- **Chat Interface (Frontend)**: A responsive, full-screen UI with SKASC branding. It handles user input and displays the conversation history using dynamic message bubbles.
+- **Hybrid NLP Engine (Backend Logic)**:
+    - **Local Matcher**: Uses `TfidfVectorizer` and `cosine_similarity` to identify relevant answers from the college's pre-approved FAQ database.
+    - **Gemini Integrator**: Connects to Google's Generative AI to provide "smart" answers for queries not found in the local database, while maintaining the college's "persona" via system instructions.
+- **History Manager**: Manages Django session data to keep track of the last few messages, enabling multi-turn conversations.
+- **Data Manager**: Handles CRUD operations for Categories and FAQs via the Django Admin interface and logs all interactions for analytics.
+
+## 7. System Implementation
+- **Language**: Python
+- **Framework**: Django
+- **Key Libraries**:
+    - `google-generativeai`: For LLM integration.
+    - `scikit-learn`: For TF-IDF and similarity calculations.
+    - `mysqlclient`: For MySQL database connectivity.
+    - `python-dotenv`: For secure configuration management.
+- **Deployment Strategy**: 
+    - Development: Localhost with MySQL.
+    - Production: PythonAnywhere or similar cloud hosting with managed MySQL.

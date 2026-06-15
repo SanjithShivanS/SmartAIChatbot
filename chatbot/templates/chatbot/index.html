@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKASC Smart Assistant</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #fbb034 0%, #ffdd00 100%); /* SKASC Yellow/Gold */
+            --primary-accent: #003366; /* Deep Blue for contrast */
+            --bot-msg-bg: #f0f2f5;
+            --user-msg-bg: #003366;
+            --bg-light: #fdfdfd;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #fff;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: var(--primary-gradient);
+            color: #003366;
+            padding: 20px 10%;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .bot-avatar {
+            width: 45px;
+            height: 45px;
+            background: #003366;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            position: relative;
+        }
+
+        .online-dot {
+            width: 12px;
+            height: 12px;
+            background: #2ecc71;
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+        }
+
+        .header-info h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .header-info p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 30px 10%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #fdfdfd;
+        }
+
+        .chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 12px 20px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: var(--user-msg-bg);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background: var(--bot-msg-bg);
+            color: #333;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .quick-actions {
+            padding: 10px 10% 15px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: white;
+        }
+
+        .action-btn {
+            background: white;
+            border: 1px solid var(--primary-accent);
+            color: var(--primary-accent);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-accent);
+            color: white;
+        }
+
+        .chat-input-area {
+            padding: 20px 10%;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 15px 25px;
+            border: 2px solid #f0f2f5;
+            border-radius: 30px;
+            outline: none;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        #user-input:focus {
+            border-color: var(--primary-accent);
+        }
+
+        #send-btn {
+            background: var(--primary-accent);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0, 51, 102, 0.3);
+            transition: all 0.2s;
+        }
+
+        #send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 51, 102, 0.4);
+        }
+
+        .typing-indicator {
+            padding: 0 10% 10px;
+            font-size: 0.85rem;
+            color: #888;
+            display: none;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <div class="bot-avatar">
+            <i class="fas fa-graduation-cap"></i>
+            <div class="online-dot"></div>
+        </div>
+        <div class="header-info">
+            <h2>SKASC Assistant</h2>
+            <p>Sri Krishna Arts & Science College</p>
+        </div>
+    </div>
+    
+    <div class="chat-box" id="chat-box">
+        <div class="message bot-message">
+            👋 Welcome to **Sri Krishna Arts and Science College (SKASC)**! I'm your Smart Assistant. How can I help you with our programs, admissions, or campus life today?
+        </div>
+    </div>
+
+    <div class="typing-indicator" id="typing">
+        <i class="fas fa-circle-notch fa-spin"></i> Assistant is thinking...
+    </div>
+
+    <div class="quick-actions">
+        <button class="action-btn" onclick="sendQuickAction('How can I apply for admission to SKASC?')">Admissions</button>
+        <button class="action-btn" onclick="sendQuickAction('What UG and PG courses are offered at SKASC?')">Programmes</button>
+        <button class="action-btn" onclick="sendQuickAction('What are the placement records for 2025-26?')">Placements</button>
+        <button class="action-btn" onclick="sendQuickAction('What scholarships are available at SKASC?')">Scholarships</button>
+    </div>
+
+    <form class="chat-input-area" id="chat-form">
+        {% csrf_token %}
+        <input type="text" id="user-input" placeholder="Ask me anything..." autocomplete="off">
+        <button type="submit" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+    </form>
+    
+    <div style="padding: 5px 10%; background: #fff; text-align: center; font-size: 0.7rem; color: #888; border-top: 1px solid #f9f9f9;">
+        <b>Disclaimer:</b> This is an independent educational project. Not an official SKASC chatbot. Data is for demonstration only.
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    $(document).ready(function() {
+        const chatBox = $('#chat-box');
+        const chatForm = $('#chat-form');
+        const userInput = $('#user-input');
+        const typing = $('#typing');
+
+        function appendMessage(text, isUser) {
+            const msgClass = isUser ? 'user-message' : 'bot-message';
+            const content = isUser ? text : marked.parse(text);
+            const msgHtml = `<div class="message ${msgClass}">${content}</div>`;
+            chatBox.append(msgHtml);
+            chatBox.scrollTop(chatBox[0].scrollHeight);
+        }
+
+        window.sendQuickAction = function(text) {
+            userInput.val(text);
+            chatForm.submit();
+        };
+
+        chatForm.on('submit', function(e) {
+            e.preventDefault();
+            const message = userInput.val().trim();
+            if (!message) return;
+
+            appendMessage(message, true);
+            userInput.val('');
+            typing.show();
+
+            $.ajax({
+                url: '{% url "get_response" %}',
+                type: 'POST',
+                data: {
+                    'message': message,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function(data) {
+                    typing.hide();
+                    appendMessage(data.response, false);
+                },
+                error: function() {
+                    typing.hide();
+                    appendMessage("⚠️ I'm having trouble processing that right now. Please try again.", false);
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
